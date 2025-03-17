@@ -4,6 +4,7 @@ services:
   #   ports:
   #     - "8500:8500"
 
+# 云服务器上本地起的mysql，没用上docker
   mysql:
     image: "mysql:latest"
     container_name: mysql01 # 容器名称
