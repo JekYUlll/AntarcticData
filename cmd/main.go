@@ -15,7 +15,7 @@ const (
 
 func main() {
 
-	dsn := "root:donotpanic@tcp(127.0.0.1:3306)/antarctic_data?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:ZZYzzy4771430///@tcp(127.0.0.1:3306)/antarctic_data?charset=utf8mb4&parseTime=True&loc=Local"
 	ms, err := storage.NewMysqlStorage(dsn)
 	if err != nil {
 		panic(err.Error())
