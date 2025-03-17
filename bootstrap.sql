@@ -2,15 +2,22 @@
 CREATE DATABASE IF NOT EXISTS antarctic_data;
 USE antarctic_data;
 
--- 创建表 weather_data
-CREATE TABLE IF NOT EXISTS weather_data (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 添加自增主键
-    station VARCHAR(255) NOT NULL,     -- 站点名称，非空
-    record_time DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3), -- 记录时间，精确到毫秒
-    temperature DOUBLE NOT NULL,       -- 温度，非空
-    humidity INT NOT NULL,             -- 湿度，非空
-    wind_dir INT NOT NULL,             -- 风向，非空
-    wind_speed DOUBLE NOT NULL,        -- 风速，非空
-    created_at DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3), -- 创建时间，精确到毫秒
-    INDEX idx_station (station)        -- 为 station 字段添加索引
-);
+-- 删除现有表（如果存在）
+DROP TABLE IF EXISTS `weather_data`;
+
+-- 创建新表
+CREATE TABLE `weather_data` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `station` varchar(50) NOT NULL,
+  `record_time` datetime NOT NULL,
+  `temperature` double NOT NULL,
+  `humidity` bigint NOT NULL,
+  `wind_dir` bigint NOT NULL,
+  `wind_speed` double NOT NULL,
+  `created_at` datetime(3) DEFAULT NULL,
+  `unique_id` varchar(100) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_station_time` (`unique_id`),
+  KEY `idx_weather_data_station` (`station`),
+  KEY `idx_weather_data_record_time` (`record_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

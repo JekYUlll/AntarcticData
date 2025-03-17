@@ -3,7 +3,6 @@ package handler
 import (
 	"antarctic/models"
 	"antarctic/storage"
-	"encoding/json"
 	"fmt"
 	"log"
 )
@@ -21,14 +20,12 @@ func NewJSONHandler() *JSONHandler {
 	return &JSONHandler{}
 }
 
-// Handle 实现WeatherHandler接口，将数据格式化为JSON
+// Handle 实现WeatherHandler接口，将数据格式化输出
 func (h *JSONHandler) Handle(data []models.WeatherData) {
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		log.Printf("序列化数据失败: %v", err)
-		return
+	// 展示新获取的数据
+	for _, d := range data {
+		fmt.Printf("新数据: %s - %s\n", d.Station, d.Time.Format("2006-01-02 15:04:05"))
 	}
-	fmt.Printf("获取到的数据:\n%s\n", string(jsonData))
 }
 
 // ConsoleHandler 控制台格式处理器
