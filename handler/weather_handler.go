@@ -65,6 +65,8 @@ func NewDBHandler(storage storage.Storage) *DBHandler {
 
 // Handle 实现WeatherHandler接口，将数据保存到数据库
 func (h *DBHandler) Handle(data []models.WeatherData) {
+	// TODO
+	// 实现 Save 函数
 	if err := h.storage.Save(data); err != nil {
 		log.Printf("保存数据失败: %v", err)
 	}

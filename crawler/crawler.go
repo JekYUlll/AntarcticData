@@ -21,6 +21,7 @@ func New(handler func([]models.WeatherData)) *Crawler {
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.pric.org.cn"),
 		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"),
+		colly.AllowURLRevisit(), // 允许重复访问URL
 	)
 
 	return &Crawler{
@@ -32,18 +33,22 @@ func New(handler func([]models.WeatherData)) *Crawler {
 
 // Start 开始爬取数据
 func (c *Crawler) Start(baseURL string) error {
-	var weatherDataList []models.WeatherData
+	var changedData []models.WeatherData
 
 	// 处理HTML内容
 	c.collector.OnHTML("body", func(e *colly.HTMLElement) {
 		// 遍历每个科考站
 		e.ForEach(".sssj-rg", func(_ int, el *colly.HTMLElement) {
 			data := c.parseWeatherData(el)
-			weatherDataList = append(weatherDataList, data)
+
+			// 检查数据是否发生变化
+			if changed := c.cache.UpdateStation(data); changed {
+				changedData = append(changedData, data)
+			}
 		})
 
-		// 检查数据变化并调用处理函数
-		if changedData := c.cache.Update(weatherDataList); len(changedData) > 0 {
+		// 如果有数据变化，调用处理函数
+		if len(changedData) > 0 {
 			c.handler(changedData)
 		}
 	})

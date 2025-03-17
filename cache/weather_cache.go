@@ -18,29 +18,25 @@ func New() *WeatherCache {
 	}
 }
 
-// Update 更新缓存，返回发生变化的数据
-func (c *WeatherCache) Update(newData []models.WeatherData) []models.WeatherData {
+// UpdateStation 更新单个站点的数据，返回是否发生变化
+func (c *WeatherCache) UpdateStation(data models.WeatherData) bool {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	var changedData []models.WeatherData
-
-	for _, data := range newData {
-		// 检查是否存在缓存数据
-		if cached, exists := c.data[data.Station]; !exists {
-			// 新数据
-			changedData = append(changedData, data)
+	// 检查是否存在缓存数据
+	if cached, exists := c.data[data.Station]; !exists {
+		// 新数据
+		c.data[data.Station] = data
+		return true
+	} else {
+		// 比较数据是否发生变化
+		if !isEqual(cached, data) {
 			c.data[data.Station] = data
-		} else {
-			// 比较数据是否发生变化
-			if !isEqual(cached, data) {
-				changedData = append(changedData, data)
-				c.data[data.Station] = data
-			}
+			return true
 		}
 	}
 
-	return changedData
+	return false
 }
 
 // isEqual 比较两个WeatherData是否相等
