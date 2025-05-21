@@ -1,9 +1,4 @@
 services:
-  # consul:
-  #   image: "consul:1.15.4"
-  #   ports:
-  #     - "8500:8500"
-
 # 云服务器上本地起的mysql，没用上docker
   mysql:
     image: "mysql:latest"

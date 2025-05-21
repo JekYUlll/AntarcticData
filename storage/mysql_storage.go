@@ -10,7 +10,6 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
 )
 
@@ -93,14 +92,23 @@ func WithBatchSize(size int) Option {
 // Save 保存天气数据到数据库
 func (m MysqlStorage) Save(data []models.WeatherData) error {
 	for _, item := range data {
-		// 尝试插入，忽略唯一索引冲突
-		err := m.db.Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "unique_id"}},
-			DoNothing: true, // 冲突时不做任何操作
-		}).Create(&item).Error
+		// 先检查记录是否已存在
+		var exists bool
+		err := m.db.Table(m.tableName).
+			Where("unique_id = ?", item.Station+"_"+item.Time.Format("20060102150405")).
+			Select("1").
+			Limit(1).
+			Find(&exists).Error
 
-		if err != nil && !errors.Is(err, gorm.ErrDuplicatedKey) {
+		if err != nil {
 			return err
+		}
+
+		// 只有在记录不存在时才插入
+		if !exists {
+			if err := m.db.Create(&item).Error; err != nil {
+				return err
+			}
 		}
 	}
 	return nil

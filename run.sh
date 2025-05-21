@@ -22,6 +22,7 @@ nohup ./Acrawler > "$LOG_FILE" 2>&1 &
 
 # 进程验证
 echo "服务已启动，进程信息："
+# shellcheck disable=SC2009
 ps aux | grep -v grep | grep Acrawler
 
 # 使用提示

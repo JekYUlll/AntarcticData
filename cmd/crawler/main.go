@@ -21,15 +21,12 @@ func main() {
 		panic(err.Error())
 	}
 
-	// 创建数据处理器
-	handlers := []handler.WeatherHandler{
-		handler.NewJSONHandler(), // JSON输出
-		// TODO 添加 db 操作的 handler
-		handler.NewDBHandler(ms),
-	}
-
 	// 创建组合处理器
-	h := handler.NewMultiHandler(handlers)
+	h := handler.NewMultiHandler(
+		[]handler.WeatherHandler{
+			handler.NewJSONHandler(),
+			handler.NewDBHandler(ms),
+		})
 
 	// 创建爬虫实例
 	c := crawler.New(h.Handle)

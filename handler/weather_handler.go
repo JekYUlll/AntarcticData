@@ -12,6 +12,7 @@ type WeatherHandler interface {
 	Handle(data []models.WeatherData)
 }
 
+// ---
 // JSONHandler JSON格式处理器
 type JSONHandler struct{}
 
@@ -28,6 +29,7 @@ func (h *JSONHandler) Handle(data []models.WeatherData) {
 	}
 }
 
+// ---
 // ConsoleHandler 控制台格式处理器
 type ConsoleHandler struct{}
 
@@ -48,6 +50,7 @@ func (h *ConsoleHandler) Handle(data []models.WeatherData) {
 	}
 }
 
+// ---
 // DBHandler 数据库处理器
 type DBHandler struct {
 	storage storage.Storage
@@ -62,8 +65,6 @@ func NewDBHandler(storage storage.Storage) *DBHandler {
 
 // Handle 实现WeatherHandler接口，将数据保存到数据库
 func (h *DBHandler) Handle(data []models.WeatherData) {
-	// TODO
-	// 实现 Save 函数
 	if err := h.storage.Save(data); err != nil {
 		log.Printf("保存数据失败: %v", err)
 	}

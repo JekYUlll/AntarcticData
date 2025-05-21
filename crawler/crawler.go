@@ -24,6 +24,7 @@ type Crawler struct {
 // New 创建新的爬虫实例
 func New(handler func([]models.WeatherData)) *Crawler {
 	c := colly.NewCollector(
+		// TODO 此处实际上直接写死链接了，规范的话应该给crawler的New函数里传链接+间隔，但一次性，没必要
 		colly.AllowedDomains("www.pric.org.cn"),
 		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"),
 		colly.AllowURLRevisit(), // 允许重复访问URL
