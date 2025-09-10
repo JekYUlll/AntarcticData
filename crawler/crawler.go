@@ -24,7 +24,6 @@ type Crawler struct {
 // New 创建新的爬虫实例
 func New(handler func([]models.WeatherData)) *Crawler {
 	c := colly.NewCollector(
-		// TODO 此处实际上直接写死链接了，规范的话应该给crawler的New函数里传链接+间隔，但一次性，没必要
 		colly.AllowedDomains("www.pric.org.cn"),
 		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"),
 		colly.AllowURLRevisit(), // 允许重复访问URL
@@ -98,13 +97,10 @@ func (c *Crawler) parseWeatherData(el *colly.HTMLElement) models.WeatherData {
 
 	// 获取时间
 	timeStr := strings.TrimSpace(strings.TrimPrefix(el.ChildText(".sssj-time span:last-child"), "时间："))
-	// 创建中国时区
 	chinaLoc, _ := time.LoadLocation("Asia/Shanghai")
-	// 在解析时明确指定使用中国时区
 	parsedTime, err := time.ParseInLocation("2006-01-02 15:04:05", timeStr, chinaLoc)
 	if err != nil {
 		log.Printf("时间解析错误: %v, 原始字符串: %s", err, timeStr)
-		// 使用当前时间作为后备
 		parsedTime = time.Now().In(chinaLoc)
 	}
 	data.Time = parsedTime
@@ -116,10 +112,22 @@ func (c *Crawler) parseWeatherData(el *colly.HTMLElement) models.WeatherData {
 		case strings.Contains(item.Text, "温度"):
 			fmt.Sscanf(value, "%f", &data.Temperature)
 		case strings.Contains(item.Text, "湿度"):
+			// 去掉 % 符号再解析
+			value = strings.TrimSuffix(value, "%")
 			fmt.Sscanf(value, "%d", &data.Humidity)
 		case strings.Contains(item.Text, "风向"):
-			fmt.Sscanf(value, "%d", &data.WindDir)
+			// 获取所有 span，尝试解析包含数字的 span
+			spans := item.ChildTexts("span")
+			for _, s := range spans {
+				s = strings.TrimSpace(s)
+				s = strings.TrimSuffix(s, "°") // 去掉单位
+				if n, _ := fmt.Sscanf(s, "%d", &data.WindDir); n == 1 {
+					break
+				}
+			}
 		case strings.Contains(item.Text, "风速"):
+			// 去掉 m/s 再解析
+			value = strings.TrimSuffix(value, "m/s")
 			fmt.Sscanf(value, "%f", &data.WindSpeed)
 		}
 	})

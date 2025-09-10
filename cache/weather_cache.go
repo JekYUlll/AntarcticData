@@ -23,7 +23,7 @@ func New() *WeatherCache {
 	}
 }
 
-// 从数据库初始化缓存
+// InitFromDB 从数据库初始化缓存
 func (c *WeatherCache) InitFromDB(storage storage.Storage) error {
 	stations := []string{"长城站", "中山站", "昆仑站", "黄河站", "泰山站", "秦岭站"}
 
@@ -40,7 +40,7 @@ func (c *WeatherCache) InitFromDB(storage storage.Storage) error {
 	return nil
 }
 
-// 检查数据是否新鲜
+// IsNewer 检查数据是否新鲜
 func (c *WeatherCache) IsNewer(data models.WeatherData) bool {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -53,7 +53,7 @@ func (c *WeatherCache) IsNewer(data models.WeatherData) bool {
 	return data.Time.After(lastTime)
 }
 
-// 更新缓存的时间戳
+// UpdateTimestamp 更新缓存的时间戳
 func (c *WeatherCache) UpdateTimestamp(data models.WeatherData) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
