@@ -18,7 +18,7 @@ chmod +x Acrawler
 
 # 后台运行阶段
 echo "启动后台进程..."
-nohup ./Acrawler > "$LOG_FILE" 2>&1 &
+nohup ./Acrawler >> "$LOG_FILE" 2>&1 &
 
 # 进程验证
 echo "服务已启动，进程信息："
