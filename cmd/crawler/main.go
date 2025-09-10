@@ -57,8 +57,11 @@ func main() {
 				log.Printf("访问失败: %v", err)
 			}
 		case <-syncTicker.C:
-			if err := c.SyncCacheWithDB(ms); err != nil {
-				log.Printf("同步缓存失败: %v", err)
+			// 重新初始化缓存以确保与数据库同步
+			if err := c.InitCacheFromDB(ms); err != nil {
+				log.Printf("重新初始化缓存失败: %v", err)
+			} else {
+				log.Printf("缓存已重新同步")
 			}
 		}
 	}

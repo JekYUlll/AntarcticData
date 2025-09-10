@@ -9,7 +9,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 设置日志路径（建议使用用户有写入权限的路径）
+# 设置日志路径
 LOG_FILE="./Acrawler.log"  # 可修改为 /var/log/Acrawler.log（需确保有权限）
 echo "日志将输出到：$LOG_FILE"
 

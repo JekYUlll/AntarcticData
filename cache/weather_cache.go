@@ -10,16 +10,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// WeatherCache 天气数据缓存
+// WeatherCache 天气数据缓存 - 简化版本，只存储每个站点的最新record_time
 type WeatherCache struct {
-	data  map[string]time.Time // 保存站点的最新时间戳而不是整个数据
-	mutex sync.RWMutex
+	latestRecordTime map[string]time.Time // 保存每个站点的最新record_time
+	mutex            sync.RWMutex
 }
 
 // New 创建新的缓存实例
 func New() *WeatherCache {
 	return &WeatherCache{
-		data: make(map[string]time.Time),
+		latestRecordTime: make(map[string]time.Time),
 	}
 }
 
@@ -27,6 +27,9 @@ func New() *WeatherCache {
 func (c *WeatherCache) InitFromDB(storage storage.Storage) error {
 	stations := []string{"长城站", "中山站", "昆仑站", "黄河站", "泰山站", "秦岭站"}
 
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	for _, station := range stations {
 		data, err := storage.GetLatest(station)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -34,76 +37,39 @@ func (c *WeatherCache) InitFromDB(storage storage.Storage) error {
 		}
 
 		if data != nil {
-			c.data[station] = data.Time
+			c.latestRecordTime[station] = data.Time // data.Time 对应数据库的 record_time
 		}
 	}
 	return nil
 }
 
-// IsNewer 检查数据是否新鲜
+// IsNewer 检查数据是否比缓存中的更新（基于record_time比较）
 func (c *WeatherCache) IsNewer(data models.WeatherData) bool {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
-	lastTime, exists := c.data[data.Station]
+	lastRecordTime, exists := c.latestRecordTime[data.Station]
 	if !exists {
 		return true // 没有缓存，视为新数据
 	}
 
-	return data.Time.After(lastTime)
+	// 比较record_time，如果新数据的record_time更晚，则认为是新数据
+	return data.Time.After(lastRecordTime)
 }
 
-// UpdateTimestamp 更新缓存的时间戳
-func (c *WeatherCache) UpdateTimestamp(data models.WeatherData) {
+// UpdateLatestRecordTime 更新站点的最新record_time
+func (c *WeatherCache) UpdateLatestRecordTime(station string, recordTime time.Time) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	c.data[data.Station] = data.Time
+	c.latestRecordTime[station] = recordTime
 }
 
-// UpdateStation 更新单个站点的数据，返回是否发生变化
-func (c *WeatherCache) UpdateStation(data models.WeatherData) bool {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+// GetLatestRecordTime 获取站点的最新record_time
+func (c *WeatherCache) GetLatestRecordTime(station string) (time.Time, bool) {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
 
-	// 检查是否存在缓存数据
-	if cached, exists := c.data[data.Station]; !exists {
-		// 新数据
-		c.data[data.Station] = data.Time
-		return true
-	} else {
-		// 比较数据是否发生变化
-		if !isEqual(cached, data.Time) {
-			c.data[data.Station] = data.Time
-			return true
-		}
-	}
-
-	return false
-}
-
-// isEqual 比较两个WeatherData是否相等
-func isEqual(a, b time.Time) bool {
-	return a.Equal(b)
-}
-
-// SyncCacheWithDB 同步缓存与数据库
-func (c *WeatherCache) SyncCacheWithDB(storage storage.Storage) error {
-	stations := []string{"长城站", "中山站", "昆仑站", "黄河站", "泰山站", "秦岭站"}
-
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	for _, station := range stations {
-		data, err := storage.GetLatest(station)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
-		}
-
-		if data != nil {
-			c.data[station] = data.Time
-		}
-	}
-
-	return nil
+	recordTime, exists := c.latestRecordTime[station]
+	return recordTime, exists
 }
