@@ -40,18 +40,18 @@ func NewMysqlStorage(dsn string, opts ...Option) (*MysqlStorage, error) {
 		return nil, fmt.Errorf("连接失败: %w | DSN: %s", err, dsn)
 	}
 
-	// 检查表是否存在，如果存在则先删除
-	if db.Migrator().HasTable(&models.WeatherData{}) {
-		// 删除表和索引
-		if err := db.Migrator().DropTable(&models.WeatherData{}); err != nil {
-			return nil, fmt.Errorf("删除表失败: %w", err)
-		}
-	}
+	// TODO WTF
+	// if db.Migrator().HasTable(&models.WeatherData{}) {
+	// 	// 删除表和索引
+	// 	if err := db.Migrator().DropTable(&models.WeatherData{}); err != nil {
+	// 		return nil, fmt.Errorf("删除表失败: %w", err)
+	// 	}
+	// }
 
-	// 自动迁移表结构
-	if err := db.AutoMigrate(&models.WeatherData{}); err != nil {
-		return nil, fmt.Errorf("自动迁移表结构失败: %w", err)
-	}
+	// // 自动迁移表结构
+	// if err := db.AutoMigrate(&models.WeatherData{}); err != nil {
+	// 	return nil, fmt.Errorf("自动迁移表结构失败: %w", err)
+	// }
 
 	// 默认配置
 	storage := &MysqlStorage{
