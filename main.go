@@ -14,7 +14,6 @@ const (
 )
 
 func main() {
-
 	dsn := "root:ZZYzzy4771430///@tcp(127.0.0.1:3306)/antarctic_data?charset=utf8mb4&parseTime=True&loc=Local"
 	ms, err := storage.NewMysqlStorage(dsn)
 	if err != nil {
@@ -25,6 +24,7 @@ func main() {
 	h := handler.NewMultiHandler(
 		[]handler.WeatherHandler{
 			handler.NewJSONHandler(),
+			handler.NewConsoleHandler(),
 			handler.NewDBHandler(ms),
 		})
 

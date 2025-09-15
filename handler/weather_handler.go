@@ -12,7 +12,6 @@ type WeatherHandler interface {
 	Handle(data []models.WeatherData)
 }
 
-// ---
 // JSONHandler JSON格式处理器
 type JSONHandler struct{}
 
@@ -29,7 +28,6 @@ func (h *JSONHandler) Handle(data []models.WeatherData) {
 	}
 }
 
-// ---
 // ConsoleHandler 控制台格式处理器
 type ConsoleHandler struct{}
 
@@ -50,7 +48,6 @@ func (h *ConsoleHandler) Handle(data []models.WeatherData) {
 	}
 }
 
-// ---
 // DBHandler 数据库处理器
 type DBHandler struct {
 	storage storage.Storage
